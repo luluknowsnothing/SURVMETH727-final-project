@@ -1,0 +1,413 @@
+---
+title: "Fundamentals of Computing and Data Display"
+subtitle: "Term paper template"
+author: "Author"
+date: "`r Sys.Date()`"
+output:
+  pdf_document:
+    toc: yes
+    df_print: kable
+references:
+- id: Wickham2014
+  title: Tidy Data
+  author:
+  - family: Wickham
+    given: Hadley
+  container-title: Journal of Statistical Software
+  volume: 59
+  issue: 10
+  page: 1-23
+  type: article-journal
+  issued:
+    year: 2014
+- id: Baumer2017
+  title: Modern Data Science with R
+  author:
+  - family: Baumer
+    given: Benjamin S.
+  - family: Kaplan
+    given: Daniel T.
+  - family: Horton
+    given: Nicholas J.
+  type: book
+  publisher: Chapman \& Hall/CRC Press.
+  issued:
+    year: 2017
+---
+
+```{r, include = FALSE}
+library(knitr)
+library(tidyverse)
+library(tidytext)
+library(textdata)
+library(sentimentr)
+# library(quanteda)
+
+```
+
+## Introduction
+
+This section outlines the research idea. We can also cite related work here [@Wickham2014; @Baumer2017].
+
+Note that compiled term paper (the PDF) is supposed to be more text-centered than the RMarkdown documents we used in class, i.e. the text sections are more detailed and big or redundant code chunks can be hidden.
+
+## Data
+
+This section describes the data sources and the data gathering process.
+
+```{r}
+# A code chunk that exemplifies the data gathering process
+# Reddit data are scraped using Pushift API on Python and saved as csv files. The code is provided in a separate python file.
+
+# import Reddit data from csv
+comments_china <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/comments_china.csv", header = TRUE)
+comments_chinese <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/comments_chinese.csv", header = TRUE)
+comments_wuhan <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/comments_wuhan.csv", header = TRUE)
+comments_ccp <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/comments_ccp.csv", header = TRUE)
+
+# select useful variables and combine the four data sets by full_join
+keyvar <- c("author", "author_flair_text", "body", "id", "parent_id", "score", "created_utc")
+comments_all <- comments_china[keyvar] %>%
+  full_join(comments_chinese[keyvar]) %>%
+  full_join(comments_wuhan[keyvar]) %>%
+  full_join(comments_ccp[keyvar])
+
+# samplesize
+N_all <- nrow(comments_all)
+
+# convert unix epoch to human readable time by Greenwich Mean Time 
+comments_all2 <- comments_all %>%
+  mutate(create_time = as.POSIXct(created_utc, origin="1970-01-01", tz = "GMT")) %>%
+  mutate(create_date = as.Date(create_time)) %>% # store only the date
+  arrange(created_utc) # sort by created_utc from 2020/1/1
+
+# unify the naming of author_flair_text and categorize them into 4 categories
+# Supporter, NonSupporter, Undecided, Navigator, & mark NA for missing value
+# table(comments_all2$author_flair_text) to have a glimpse of the naming formats
+TrumpSupport <- rep(NA,N_all)
+for (i in seq_along(comments_all2$author_flair_text)){
+  if(is.na(comments_all2$author_flair_text[i])){
+    TrumpSupport[i] <- NA
+  }else if(comments_all2$author_flair_text[i]==""){
+    TrumpSupport[i] <- NA
+  }else if(grepl("Unfl",comments_all2$author_flair_text[i],fixed=TRUE)){
+    TrumpSupport[i] <- NA
+  }else if (grepl("Non",comments_all2$author_flair_text[i],fixed=TRUE)){
+    TrumpSupport[i] <- "NonSupporter"
+  }else if(grepl("Unde",comments_all2$author_flair_text[i],fixed=TRUE)){
+    TrumpSupport[i] <- "Undecided"
+  }else if(grepl("Navi",comments_all2$author_flair_text[i],fixed=TRUE)){
+    TrumpSupport[i] <- "NimbleNavigator"
+  }else{
+    TrumpSupport[i] <- "Supporter"
+  }
+}
+
+table(TrumpSupport)
+
+comments_all2$TrumpSupport <- TrumpSupport
+# now I get a tidy data set comments_all2 with variables of interest
+
+
+```
+
+
+```{r}
+# Trump Tweets from 1/1/2020 - 11/2/2020 mentioning "China/Chinese/Wuhan/CCP"
+# Using Twitter Advanced Search function to get the result webpage containing the information I need
+url <- read_html("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
+
+# library(robotstxt)
+# paths_allowed("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
+# It returns FALSE. It indicates that only tweeter's official API is allowed.
+
+# I still have a try using rvest. But Twitter blocked the attempt got by returning empty lists, same as people reported on Stack Overflow. The following codes are what I have tried. 
+# library("rvest")
+# url = read_html("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
+# # by inspect the html elements of the webpage, I got the exact xpath for Trumps' twitters along with
+# # information of date, num of likes, num of retweets, and num of comments.
+# nodes <- html_nodes(url, xpath ='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/div/section/div/div/div[1]/div/div/article/div/div/div/div[2]/div[2]')
+# or use class selector: xpath = '//*[contains(concat( " ", @class, " " ), concat( "", "r-1mi0q7o", " " ))]//div'
+# But anyway they just got blocked.
+
+# Considering there are not many tweets in total, my eventual choice is using copy and paste to textedit.
+
+# import the csv.
+trump_tweets <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/trump_tweets.csv", header = TRUE)
+
+# recognize and format date variables
+trump_tweets$create_date <- as.Date(trump_tweets$create_date, format = "%m/%d/%Y")
+trump_tweets$retrieve_date <- as.Date(trump_tweets$create_date, format = "%m/%d/%Y")
+
+# sample size
+N_trump <- nrow(trump_tweets)
+
+```
+
+```{r, include = FALSE}
+# Additional code chunks that repeat tasks or do basic things can be hidden
+```
+
+## Results
+
+This section presents the main results.
+
+### Data exploration
+
+The results section may have a data exploration part, but in general the structure here depends on the specific project.
+
+```{r}
+# Get sentiments of each Reddit comments
+
+# separate sentences of comments
+sentences <- get_sentences(comments_all2$body)
+# get the number of sentences for normalization of bing/afinn sentiment scores.
+sentencecount<- sapply(1:N_all, function(x) length(sentences[[x]]))
+
+# attach sentencecount back to the data frame
+comments_all2$sentence_count <- sentencecount
+
+
+#1. tidytext approach:
+
+# tokenization of comments 
+# remove stop words:
+comments_clean <- comments_all2 %>%
+  unnest_tokens("word", body) %>%
+  anti_join(get_stopwords())
+
+#1.1 with dictionary afinn (get net sentiment/or called polarity)
+comments_afinn <- comments_clean %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(id) %>%
+  summarise(afinn = sum(value))
+
+# Note that not all words have an afinn sentiment score, 
+# and thus, not all comments has a sentiment score.
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+comments_all2 <- comments_all2 %>%
+  left_join(comments_afinn, by = "id") %>%
+  mutate(afinn = afinn/sentencecount)
+
+#1.2 using bing (get net sentiment/polarity)
+comments_bing <- comments_clean %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(id, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+  mutate(bing = positive - negative) %>%
+  rename(pos_bing = positive, neg_bing = negative)
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+comments_all2 <- comments_all2 %>%
+  left_join(comments_bing, by = "id") %>%
+  mutate(bing = bing/sentencecount,
+         pos_bing = pos_bing/sentencecount,
+         neg_bing = neg_bing/sentencecount)
+
+#2 using sentimentr package
+Sentiment_r <- data.frame(matrix(data=NA,nrow=N_all,ncol=2))
+names(Sentiment_r) <- c("word_count", "sentimentr")
+for (i in seq_along(comments_all2$body)){
+  # get an aggregated sentiment score for each comment 
+  output <- sentiment_by(comments_all2$body[i])
+  # return values
+  Sentiment_r$word_count[i] <- output$word_count
+  Sentiment_r$sentimentr[i] <- output$ave_sentiment
+}
+
+# attach the values back to the comments_all2
+comments_all2 <- cbind(comments_all2,Sentiment_r)
+
+# considering that sentimentr takes a while to run, save the table to csv.
+write.csv(comments_all2, file = "/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/reddit_sentiment.csv")
+
+```
+
+```{r}
+# get sentiment for Trump's tweets
+
+# separate sentences of comments
+sentences_trump <- get_sentences(trump_tweets$body)
+# get the number of sentences for normalization of bing/afinn sentiment scores.
+sentencecount_trump<- sapply(1:N_trump, function(x) length(sentences_trump[[x]]))
+
+#1. tidytext approach:
+
+# tokenization of comments 
+# remove stop words:
+trump_tweets_clean <- trump_tweets %>%
+  unnest_tokens("word", body) %>%
+  anti_join(get_stopwords())
+
+#1.1 with dictionary afinn (get net sentiment/or called polarity)
+trump_comments_afinn <- trump_tweets_clean %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(id) %>%
+  summarise(afinn = sum(value))
+
+# Note that not all words have an afinn sentiment score, 
+# and thus, not all comments has a sentiment score.
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+trump_tweets <- trump_tweets %>%
+  left_join(trump_comments_afinn, by = "id") %>%
+  mutate(afinn = afinn/sentencecount_trump)
+
+#1.2 using bing (get net sentiment/polarity)
+trump_comments_bing <- trump_tweets_clean %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(id, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+  mutate(bing = positive - negative) %>%
+  rename(pos_bing = positive, neg_bing = negative)
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+trump_tweets <- trump_tweets %>%
+  left_join(trump_comments_bing, by = "id") %>%
+  mutate(bing = bing/sentencecount_trump,
+         pos_bing = pos_bing/sentencecount_trump,
+         neg_bing = neg_bing/sentencecount_trump)
+
+#2 using sentimentr package
+trump_Sentiment_r <- data.frame(matrix(data=NA,nrow=N_trump,ncol=2))
+names(trump_Sentiment_r) <- c("word_count", "sentimentr")
+for (i in seq_along(trump_tweets$body)){
+  # get an aggregated sentiment score for each comment 
+  output <- sentiment_by(trump_tweets$body[i])
+  # return values
+  trump_Sentiment_r$word_count[i] <- output$word_count
+  trump_Sentiment_r$sentimentr[i] <- output$ave_sentiment
+}
+
+# attach the values back to the comments_all2
+trump_tweets <- cbind(trump_tweets,trump_Sentiment_r)
+
+# save as csv
+write.csv(trump_tweets, file = "/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/trumptweets_sentiment.csv")
+
+```
+
+### Analysis
+
+This section presents the main results, such as (for example) stats and graphs that show relationships, model results and/or clustering, PCA, etc.
+
+```{r}
+
+# Note: Nimble Navigators: probably represents the most loyal trump supporters.
+# according to "https://www.reddit.com/r/OutOfTheLoop/comments/4e5sdg/what_is_a_nimble_navigator_and_what_does_it_have/"
+
+# What is the Reddit comments' overall sentiment towards China?
+grp.sum1 <- comments_all2 %>%
+  select(afinn,bing,sentimentr) %>%
+  pivot_longer(everything(),names_to="method", values_to="polarity") %>%
+  group_by(method) %>%
+  summarise(grp.mean = mean(polarity, na.rm=TRUE),
+            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
+
+# Any differences between trump supporters and non-supporters?
+grp.sum2 <- comments_all2 %>%
+  select(TrumpSupport,afinn,bing,sentimentr) %>%
+  pivot_longer(-TrumpSupport,names_to="method", values_to="polarity") %>%
+  group_by(TrumpSupport, method) %>%
+  summarise(grp.mean = mean(polarity, na.rm=TRUE),
+            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
+  
+## ANOVA analysis
+mod = aov(afinn~TrumpSupport,data=comments_all2)
+summary(mod)
+TukeyHSD(mod)
+
+mod = aov(bing~TrumpSupport,data=comments_all2)
+summary(mod)
+TukeyHSD(mod)
+
+mod = aov(sentimentr~TrumpSupport,data=comments_all2)
+summary(mod)
+TukeyHSD(mod)
+
+## barplot
+grp.sum2 %>%
+  ggplot(aes(x=TrumpSupport, y=grp.mean, fill=TrumpSupport)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
+               position=position_dodge(.9)) +
+  facet_wrap(~ method, scales = "free", nrow = 3) +
+  theme_minimal()
+  
+# What is the Trump tweets' overall sentiment towards China?
+grp.sum3 <- trump_tweets %>%
+  select(afinn,bing,sentimentr) %>%
+  pivot_longer(everything(),names_to="method", values_to="polarity") %>%
+  group_by(method) %>%
+  summarise(grp.mean = mean(polarity, na.rm=TRUE),
+            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_trump))
+
+
+## draw the sentiment of trump's tweets along with the reddit comments
+grp.sum3 %>%
+  mutate(TrumpSupport = "Trump") %>%
+  full_join(grp.sum2) %>%
+  ggplot(aes(x=TrumpSupport, y=grp.mean, fill=TrumpSupport)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
+               position=position_dodge(.9)) +
+  facet_wrap(~ method, nrow = 3, scales = "free") +
+  theme_minimal()
+
+
+
+```
+
+```{r}
+# Time series analysis
+# Is there a sentiment change over time?
+mod = lm(afinn ~ create_date, data = comments_all2)
+summary(mod)
+mod = lm(afinn ~ create_date*TrumpSupport, data = comments_all2)
+summary(mod)
+
+mod = lm(afinn ~ create_date*TrumpSupport, data = comments_all2[which( comments_all2$TrumpSupport=="Supporter" | comments_all2$TrumpSupport=="NonSupporter")])
+summary(mod)
+
+#visualize
+comments_all2 %>%
+  filter(!is.na(TrumpSupport)) %>%
+  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
+  group_by(create_date, method, TrumpSupport) %>%
+  summarise(grp.mean = mean(polarity, na.rm=TRUE),
+            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all)) %>%
+  ggplot(aes(x = create_date, y = grp.mean, color = TrumpSupport)) +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
+  facet_wrap(. ~ method, scales="free", nrow=3)
+
+
+# trump's tweets
+mod=lm(afinn~as.numeric(create_date),data=trump_tweets)
+summary(mod)
+
+trump_tweets %>%
+  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
+  ggplot(aes(x = create_date, y = polarity, color = method)) +
+  geom_line() +
+  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
+  facet_wrap(. ~ method, scales="free", nrow=3)
+
+```
+
+```{r}
+# control datasets
+
+
+```
+
+## Discussion
+
+This section summarizes the results and may briefly outline advantages and limitations of the work presented.
+
+## References
