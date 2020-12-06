@@ -43,36 +43,46 @@ for key in keys:
 #----------------------------------------------------------------------------#
 # control comments
 # random comments from the subreddit over the required period
-def rand_date(start,end):
+def rand_date(start,end, n):
     # start and end are timestamps
   	# get a random timestamp
-  	return int((start + (end - start)*random.random()))
+    date_list = []
+    for i in range(n):
+      date_list.append(int((start + (end - start)*random.random())))
+    return date_list
 
-# scrap random comments during 1000 random hours on the subreddit over the epoch
+# scrap random comments during 200 random hours on the subreddit over the epoch
+randstartdate = rand_date(start_epoch_2020, end_epoch_2020-3600, 200)
+# create an empty list
 control_list = []
 control_list = list(api.search_comments(
-                              after= rand_date(end_epoch_2020,start_epoch_2020)
-                              before= after + 3600               
+                              after= randstartdate[0],
+                              before= randstartdate[0] + 3600,               
                               subreddit='AskTrumpSupporters'))
 # save as a data frame
-control_comments_df = pd.DataFrame([s.d_ for s in comment_list])
+control_comments_df = pd.DataFrame([s.d_ for s in control_list])
 
-for i in range(999):
+# get comments over random hours
+for i in range(1, 200):
   control_list = []  
   control_list = list(api.search_comments(
-                              after= rand_date(end_epoch_2020,start_epoch_2020)
-                              before= after + 3600               
+                              after= randstartdate[i],
+                              before= randstartdate[i] + 3600,               
                               subreddit='AskTrumpSupporters'))
   # save as a data frame
-  temp = pd.DataFrame([s.d_ for s in comment_list])
-  control_comments_df = control_comments.append(temp, ignore_index=True)
+  temp = pd.DataFrame([s.d_ for s in control_list])
+  # append back to the main data frame
+  control_comments_df = control_comments_df.append(temp, ignore_index=True)
 
 # save as csv
 df = control_comments_df.copy(deep=True)
 # remove the line space of comments body to avoid error
-line = str(control_comments_df.iloc[index]['body']).replace('\n', '')
-df.loc[df.index == index, 'body'] = line
-df.to_csv(f'control_comments.csv')
+for index in range(len(control_comments_df)):
+  line = str(control_comments_df.iloc[index]['body']).replace('\n', '')
+  df.loc[df.index == index, 'body'] = line
+df.to_csv('control_comments.csv')
+  
+
 
 
   
