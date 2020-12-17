@@ -1,5 +1,3 @@
-!pip install psaw
-
 # load libraries
 import pandas as pd
 import datetime as dt

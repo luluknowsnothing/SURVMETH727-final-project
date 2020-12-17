@@ -1,38 +1,17 @@
 ---
-title: "Fundamentals of Computing and Data Display"
-subtitle: "Term paper template"
-author: "Author"
+title: "The Tide of Anti-China Attitude"
+subtitle: "Term Paper for SURVMETH 727"
+author: "Yuyan Han"
 date: "`r Sys.Date()`"
 output:
   pdf_document:
-    toc: yes
+    toc: TRUE
     df_print: kable
-references:
-- id: Wickham2014
-  title: Tidy Data
-  author:
-  - family: Wickham
-    given: Hadley
-  container-title: Journal of Statistical Software
-  volume: 59
-  issue: 10
-  page: 1-23
-  type: article-journal
-  issued:
-    year: 2014
-- id: Baumer2017
-  title: Modern Data Science with R
-  author:
-  - family: Baumer
-    given: Benjamin S.
-  - family: Kaplan
-    given: Daniel T.
-  - family: Horton
-    given: Nicholas J.
-  type: book
-  publisher: Chapman \& Hall/CRC Press.
-  issued:
-    year: 2017
+bibliography: references.bib
+csl: american-sociological-association.csl
+header-includes:
+   - \usepackage{dcolumn} 
+
 ---
 
 ```{r, include = FALSE}
@@ -43,43 +22,45 @@ library(textdata)
 library(sentimentr)
 library(sjmisc)
 library(xts)
-# library(zoo)
 library(dygraphs)
 library(Kendall)
 library(forecast)
+library(xtable)
+library(kableExtra)
+library(htmlwidgets)
 
 ```
 
 ## Introduction
 
-The US-China relation has slipped into a downward spiral since the trade war in 2018, and the strike of COVID-19 pandemic pushed the already-intense US-China relation to a boiling point in 2020. President Trump publicly condemned China for the spread of the COVID-19 in United States through multiple platforms on countless occasions and insisted on calling COVID-19 "China Virus". Furthermore, the Trump Administration took multiple aggressive anti-China actions in 2020, including but not limited to ordering China to close Huston Consolate (https://www.bbc.com/news/world-us-canada-53497193), scrutinizing Chinese students and scholars at airports under the premise of them being spies (https://www.bbc.com/news/world-us-canada-54016278), Attempting to ban two Chinese social media apps TikTok and WeChat (https://www.cnn.com/2020/08/06/politics/trump-executive-order-tiktok/index.html). As BBC News pointed out, such anti-China policies and campaign-speak would resonate with voters, and meanwhile emphasize that China, rather than Trump, should be responsible for huge mess of COVID-19 situations in the State (https://www.bbc.com/news/world-us-canada-53517439). In the large anti-China envrionment, the public's view of China seems to be negatively impacted too. Incidents of anti-Chinese or more generally anti-Asian prejudice were frequently reported during the pandemic (https://www.bbc.com/news/world-us-canada-52714804). A news article coming out on September 16th in the Diplomat magazine frankly pointed out that "this was the year that the tide of public opinion in the United States turned against China." As one may imagine, if such negative attitude towards China is indeed a widespread trend among the population rather than isolated incidents, there will be huge and long-term consequences in both macro and micro dimensions. On the large scale, as the Diplomat article commented "if American public opinion remains at such historically low levels, we are likely to see more American politicians abandoning the pretense of a “mostly cooperative” relationship with China". Such change undoubtedly will influence the US-China relation, and further the global politics and economy. On the small scale, the public opinion may directly impact the life of Chinese and Asians (since Chinese are almost indistinguishable from other East Asians from appearance) in the United States. 
+The US-China relation has slipped into a downward spiral since the trade war in 2018, and the strike of COVID-19 pandemic pushed the already-intense US-China relation to a boiling point in 2020. President Trump publicly condemned China for the spread of the COVID-19 in United States through multiple platforms on countless occasions and insisted on calling COVID-19 "China Virus". Furthermore, the Trump Administration took multiple aggressive anti-China actions in 2020, including but not limited to ordering China to close Huston Consolate [@hustonconsulate], scrutinizing Chinese students and scholars at airports under the premise of them being spies [@airportscrutiny], issuing bans on two Chinese social media apps TikTok and WeChat [@tiktokban]. As BBC News pointed out, such anti-China policies and campaign-speak were aim to resonate with voters, and meanwhile emphasized that China, rather than Trump, should be responsible for huge mess of COVID-19 situations in the United State [@uschinarelation]. In the large anti-China environment, the public's view of China seems to be negatively impacted too. Incidents of anti-Chinese or more generally anti-Asian prejudice were frequently reported during the pandemic [@attackasian]. A news article coming out on September 16th in the Diplomat magazine frankly pointed out that "this was the year that the tide of public opinion in the United States turned against China" [@turningpoint]. As one may imagine, if such negative attitude towards China is indeed a widespread trend among the population rather than isolated incidents, there will be huge and long-term consequences in both macro and micro dimensions. On the large scale, as the Diplomat article commented "if American public opinion remains at such historically low levels, we are likely to see more American politicians abandoning the pretense of a “mostly cooperative” relationship with China". Such change undoubtedly will influence the US-China relation, and further the global politics and economy. On the small scale, the public opinion may directly impact the life of Chinese and Asians (since Chinese are almost indistinguishable from other East Asians from appearance) in the United States. 
 
 
-Given the large background, the current research aims to investigate the public attitude towards China in the year of 2020. First, we would like to figure out whether there is actually a negative tide of attitude towards China among Americans in the year of 2020 as the news articles demonstrated? Then, if the year of 2020 is a critical turning point for the public opinion about China, we shall expect a downward trajectory of public attitude over time, either steeply or gradually. Furthermore, considering the aggressive anti-China policies and campaign-speak adopted by the Trump administration, the Trump supporters are more likely to be the audience of such anti-China messages compared to non-supporters. This naturally leads to the question of whether there are any differences between Trump supporters and non-supporters in their attitude towards China? Lastly, is there any dependence in terms of time series between Trump's attitude and the his supporters' attitude towards China? If Trump's attitude change is leading his supporters' attitude change or vice versa?
+Given the large background, the current research aims to investigate the public attitude towards China in the year of 2020. First, we would like to figure out whether there is actually a negative tide of attitude towards China among Americans in the year of 2020 as the news articles demonstrated? Then, if the year of 2020 is a critical turning point for the public opinion about China, we shall expect a downward trajectory of public attitude over time, either steeply or gradually. Furthermore, considering the aggressive anti-China policies and campaign-speak adopted by the Trump administration, the Trump supporters are more likely to be the audience of such anti-China messages compared to non-supporters. This naturally leads to the question of whether there are any differences between Trump supporters and non-supporters in their attitude towards China? Lastly, is there any concurrence in terms of time series between Trump's attitude and the his supporters' attitude towards China? If Trump's attitude change is leading his supporters' attitude change or vice versa?
 
 
-This research hopes to get insight into the above questions through lens of social media. In the following section, we will specify the data sources and data gathering process. 
+This research hopes to get insight into the above questions through the lens of social media with the aid of sentiment analysis. In the following section, we will specify the data sources and data gathering process. 
 
 
 ## Data
 
 ### Reddit Data
 
-To access the public opinions, we resorted to a subreddit r/AskTrumpSupporters. Reddit is one the most popular websites in United States over year, and at time of writing, Reddit is the 7th most popular (Alexa, 2020). The popularity implies the abundance of data available and the possibility for representative opinions. Second, Reddit provides an anonymous environment such that users may express their genuine opinions without the worry about social desirability. Third, compared to other popular social media, like facebook and twitter, Reddit is more research-friendly, by providing free access to most of its data. Specifically regarding the subreddit r/AskTrumpSupporters, it has around 926000 participants and stays active since 2016. One specific advantage of this subreddit is that users are required to explicitly tag themselves as Trump supporters or not before making submissions or comments. This is the exact information that fulfills the purpose of the current research.  
+To access the public opinions, we resorted to a subreddit r/AskTrumpSupporters. Reddit is one the most popular websites in United States over years. At the time of writing, Reddit is the 7th most popular [@alexa]. The popularity implies the abundant data available and the possibility for representative opinions. Second, Reddit provides an anonymous environment such that users may express their genuine opinions without the worry about social desirability. Third, compared to other popular social media, like facebook and twitter, Reddit is more research-friendly, by providing free access to most of its data. Specifically regarding the subreddit r/AskTrumpSupporters, it has around 926000 participants and stays active since 2016. One specific advantage of this subreddit is that users are required to explicitly tag themselves as Trump supporters or not before making submissions or comments. This is the exact information that fulfills the purpose of the current research.  
 
-We collected relevant data using Pushshift API on Python. Briefly, we searched through all the comments within the subreddit r/AskTrumpSupporters during the period of 1/1/2020 to 11/2/2020 (right before the Presidential Election) with four key words "China", "Chinese", "Wuhan", "CCP", and stored them in four separate csv files. Note that we store comments about different key words in separate csv files in case that we may want to analyze them separately in future studies. The csv files as well as the Python codes are provided in a separate txt file. Together, we collected 12010 comments containing the key word "china", 3811 comments with the word "chinese", 997 comments with the word "wuhan", and 596 comments with the word "ccp". The four csv files may have some overlapping comments since these comments contain multiple key words. We will deal with the repetition in the data exploration section for the aggregated dataset. 
+We collected relevant data using Pushshift API on Python. Briefly, we searched through all the comments within the subreddit r/AskTrumpSupporters during the period of 1/1/2020 to 11/2/2020 (right before the Presidential Election) with four key words "China", "Chinese", "Wuhan", "CCP", and stored them in four separate csv files. Note that we store comments about different key words in separate csv files in case that we may want to analyze them separately in future studies. The csv files as well as the Python codes are provided in a separate txt file. Together, we collected 12010 comments containing the key word "china", 3811 comments with the word "chinese", 997 comments with the word "wuhan", and 596 comments with the word "ccp". The four csv files may have some overlapping comments since some comments contain multiple key words. We dealt with the repetition in the data exploration section to obtain an aggregated dataset. 
 
-In addition to the china-relevant comments, we also collected a set of random comments from the subreddit over the same period as the control group. The Pushshift API provides no direct arguments to get random comments. Therefore, to achieve this we first generate 200 random hours between 1/1/2020 to 11/2/2020, and get all comments created during these random hours, with no key words specified. The raw csv file collected a total of 18369 comments. Again, we will deal with possible repetitions later in the data exploration. 
+In addition to the china-relevant comments, we also collected a set of random comments from the subreddit over the same period as the control group. The Pushshift API provides no direct arguments to get random comments. Therefore, to achieve this we first generated 200 random hours between 1/1/2020 to 11/2/2020, and collected all comments created during these random hours, with no key words specified. The raw csv file collected a total of 18369 comments. Again, we dealt with possible repetitions later in the data exploration. 
 
 ### Twitter Data
 
-As it is known, Twitter is the major social media that Trump constantly posts his opinions and communicate with the public over the past four years. Currently he has about 88.6 million followers on Twitter, including a substantial portion of his supporters. His tweets can have up to millions of comments, likes and retweets, which implies a big impact on the public. Therefore, Trump's tweets, we believe, might be a good source to study the dependence of china-relevant attitudes between Trump and his supporters. 
+As it is known, Twitter is the major social media that Trump constantly posts his opinions and communicates with the public over the past four years. Currently he has about 88.6 million followers on Twitter, including a substantial portion of his supporters. His tweets can have up to millions of comments, likes and retweets, which implies a big impact on the public. Therefore, Trump's tweets might be a good candidate to study the concurrence of china-relevant attitudes between Trump and his supporters. 
 
-Consistent with what we've collected on Reddit, we searched through Trump's tweets (including original replies but excluding retweets) over the same period with the same set of key words using the advanced search function on the Twitter web page. Here is the link to the search results: https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query. In total we collected a total of 121 tweets. Twitter only allows its official API to scrape its data with multiple limitations for a high price. Considering the small number of tweets we need to collect, instead of web scraping we simply manually copied these tweets and stored in a csv file.
+Consistent with what we've collected on Reddit, we searched through Trump's tweets (including original replies but excluding retweets) over the same period with the same set of key words using the advanced search function on the Twitter web page. Here is the link to the search results: https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query. In total we collected 121 tweets. Twitter only allows its official API to scrape its data with multiple limitations for a high price. Considering the small number of tweets we need to collect, instead of web scraping we simply manually copied these tweets and stored in a csv file.
 
+All the data, analyses and associated files are available at: https://github.com/luluknowsnothing/SURVMETH727-final-project 
 
-
-```{r}
+```{r include=FALSE}
 # library(robotstxt)
 # paths_allowed("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
 # It returns FALSE. It indicates that only tweeter's official API is allowed.
@@ -92,10 +73,11 @@ Consistent with what we've collected on Reddit, we searched through Trump's twee
 
 #### Clean up raw data
 
-To start, we cleaned up the raw csv files for further sentiment analysis. We only selected useful variables from each of the four original data sets storing china-relevant comments, respectively, "author" (user name), "author_flair_text" (trump supporter or not), "body" (the body of comments), "id" (unique id for each comment), and "created_utc"(the exact time when each comment was created in the format of unix time stamp), and then combine four data sets into an aggregated one excluding repetitions with `dplyr::full_join()`.
+To start, we cleaned up the raw csv files for further sentiment analysis. We only selected useful variables from each of the four original data sets of china-relevant comments, respectively, "author" (user name), "author_flair_text" (trump supporter or not), "body" (the body of comments), "id" (unique id for each comment), and "created_utc"(the exact time when each comment was created in the format of unix time stamp), and then combined four data sets into an aggregated one excluding repetitions with `dplyr::full_join()`.
 
-```{r}
-# A code chunk that exemplifies the data gathering process
+```{r, cache=TRUE, include=FALSE}
+# NOTE：set cache=TRUE to reduce processing time, especially for the saks of sentimentr package.
+################################################################################################
 # Reddit data are scraped using Pushift API on Python and saved as csv files. The code is provided in a separate python file.
 
 # import Reddit data from csv
@@ -104,22 +86,26 @@ comments_chinese <- read.csv("comments_chinese.csv", header = TRUE)
 comments_wuhan <- read.csv("comments_wuhan.csv", header = TRUE)
 comments_ccp <- read.csv("comments_ccp.csv", header = TRUE)
 
+```
+
+```{r}
 # select useful variables and combine the four data sets by full_join
 keyvar <- c("author", "author_flair_text", "body", "id", "created_utc")
 comments_all <- comments_china[keyvar] %>%
   full_join(comments_chinese[keyvar]) %>%
   full_join(comments_wuhan[keyvar]) %>%
   full_join(comments_ccp[keyvar])
+```
 
+```{r, include=FALSE}
 # samplesize
 N_all <- nrow(comments_all)
 
 ```
          
-The aggregated dataset has a total of `r N_all` unique comments. Next we converted the unix time stamps into readable dates and times of class `Date` to prepare for time series analysis. 
+The aggregated dataset had a total of `r N_all` unique comments. Next, we converted the unix time stamps into readable dates and times of `Date` objects to prepare for time series analysis.
 
-```{r}
-
+```{r, cache=TRUE}
 # convert unix epoch to human readable time and date by Greenwich Mean Time
 # create_time: counts to seconds
 # create_date: counts to dates
@@ -130,16 +116,17 @@ comments_all2 <- comments_all %>%
 
 ```
            
-Next, we unified the naming of `author_flair_text`, because users tagged their support status with different formats.
 
-```{r}
-# check the original naming of author_flair_text.
+
+```{r, cache=TRUE, include = FALSE}
+# check the original tags of author_flair_text.
 table(comments_all2$author_flair_text)
 
 # unify the naming of author_flair_text and categorize them into 3 categories
 # Supporter, NonSupporter, & Undecided. Mark NA for missing value/unflaired
 
-# note that: "Nimble navigators" is part of the lexicon that Donald Trump supporters have created to describe themselves, inspired by Trump's own words.
+# note: "Nimble navigators" is part of the lexicon that Trump supporters 
+# have created to describe themselves inspired by Trump's own words.
 
 TrumpSupport <- rep(NA,N_all)
 for (i in seq_along(comments_all2$author_flair_text)){
@@ -157,21 +144,14 @@ for (i in seq_along(comments_all2$author_flair_text)){
     TrumpSupport[i] <- "Supporter"
   }
 }
-
-# check the result naming
-table(TrumpSupport)
-
 comments_all2$TrumpSupport <- TrumpSupport
-# now I get a tidy data set comments_all2 with variables of interest
-
 
 ```
 
-It shows that we have `r table(TrumpSupport)[["NonSupporter"]]` comments from non-supporters, `r table(TrumpSupport)[["Supporter"]]` comments from supporters, and `r table(TrumpSupport)[["Undecided"]]` comments from undecided users, and `r length(which(is.na(TrumpSupport)))` comments with missing tags.
+We also unified the tags of `author_flair_text` and stored the new tags in a variable `TrumpSupport`, because users tagged their support status with different formats. Together we have `r table(TrumpSupport)[["NonSupporter"]]` comments from non-supporters, `r table(TrumpSupport)[["Supporter"]]` comments from supporters, and `r table(TrumpSupport)[["Undecided"]]` comments from undecided users, and `r length(which(is.na(TrumpSupport)))` comments with missing tags. These comments were from 884 supporters, 1838 non-supporters, 173 undecided authors.
 
 
-```{r include=FALSE}
-
+```{r, include=FALSE, cache=TRUE}
 # reddit control comments
 comments_control <- read.csv("comments_control.csv", header = TRUE)
 # select useful variables
@@ -187,7 +167,7 @@ comments_control <- comments_control %>%
   mutate(create_date = as.Date(create_time)) %>% # store only the date
   arrange(created_utc) # sort by created_utc from 2020/1/1
 
-table(comments_control$author_flair_text)
+# table(comments_control$author_flair_text)
 # an additional naming Toaster is the auto moderators of rather than meaningful comments. 
 # We thus ignore all comments associated with this naming by tag it as missing.
 
@@ -219,11 +199,11 @@ comments_control$TrumpSupport <- TrumpSupport_control
 
 ```
 
-We repeated the same process to clean up the control comments. Together we got `r N_control` unique comments. Among them, `r table(TrumpSupport_control)[["NonSupporter"]]` comments were from non-supporters, `r table(TrumpSupport_control)[["Supporter"]]` comments were from supporters, and `r table(TrumpSupport_control)[["Undecided"]]` comments were from undecided users. The rest comments were either regulating messages from auto moderators or with missing tags.
+We repeated the same process to clean up the control comments. Together we got `r N_control` unique comments. Among them, `r table(TrumpSupport_control)[["NonSupporter"]]` comments were from non-supporters, `r table(TrumpSupport_control)[["Supporter"]]` comments were from supporters, and `r table(TrumpSupport_control)[["Undecided"]]` comments were from undecided users. The rest comments were either regulating messages from auto moderators or with missing tags. Among authors, 2141 were supporters, 2162 were non-supporters, and 373 were undecided.
 
 
-For Trumps' tweets, we just transform the dates into class `Date` variables to prepare for time series analysis.
-```{r}
+For Trumps' tweets, we just transformed the dates into `Date` objects to prepare for time series analysis.
+```{r, include=FALSE, cache=TRUE}
 # import the csv.
 trump_tweets <- read.csv("trump_tweets.csv", header = TRUE)
 
@@ -236,23 +216,24 @@ N_trump <- nrow(trump_tweets)
 
 ```
 
-#### Prepare for sentiment analysis
-The results section may have a data exploration part, but in general the structure here depends on the specific project.
+### Analysis
 
-```{r}
-# Get sentiments of each Reddit comments
+#### Get Sentiment Polarity
 
+There are lots of packages for sentiment analysis using r language, but there are no official standards or rankings that tell us which one is the most superior. To avoid artificial effects simply due to the choice of packages or lexicons, we thus employed two packages and three lexicons for sentiment analysis. In this section, we would describe how we obtained sentiment scores for each comment.
+
+The first approach relied on the package "tidytext" , which simply treats a text as a combination of individual words, and the overall sentiment is just the sum of sentiment of each individual words[@silge2017text]. This approach requires tidy data before sentiment analysis. Therefore, we transformed the original comments into tidy text, in which one row only contained one word, and then obtained the sentiment for each word by `inner_join` with two lexicons, namely "Afinn" and "Bing", both providing a sentiment polarity score for each word included. Specifically, "Afinn" includes 2477 words, where the most positive word has a score of +5, and the most negative word has a score of -5; "Bing" includes 6786 words, where positive and negative words are simply coded in a binary method. Additionally, considering the huge variations regarding the length of the comments, I normalized the sentiment scores by dividing the number of sentences of a comment, thus getting a mean sentence-wise sentiment for each comment. In this way, we reduced possible noises elicited by variations in comment length, and also kept consistent with the default normalization by our second approach with "sentimentr" package. The following r chunks exemplify the process of getting sentiment scores with the "tidytext" approach
+
+```{r, cache = TRUE}
+# Example codes: getting afinn sentiment polarity score for each Reddit comment
 # separate sentences of comments
 sentences <- get_sentences(comments_all2$body)
 # get the number of sentences for normalization of bing/afinn sentiment scores.
 sentencecount<- sapply(1:N_all, function(x) length(sentences[[x]]))
-
 # attach sentencecount back to the data frame
 comments_all2$sentence_count <- sentencecount
 
-
 #1. tidytext approach:
-
 # tokenization of comments 
 # remove stop words:
 comments_clean <- comments_all2 %>%
@@ -273,6 +254,9 @@ comments_afinn <- comments_clean %>%
 comments_all2 <- comments_all2 %>%
   left_join(comments_afinn, by = "id") %>%
   mutate(afinn = afinn/sentencecount)
+```
+
+```{r, cache = TRUE, include=FALSE}
 
 #1.2 using bing (get net sentiment/polarity)
 comments_bing <- comments_clean %>%
@@ -290,163 +274,12 @@ comments_all2 <- comments_all2 %>%
          pos_bing = pos_bing/sentencecount,
          neg_bing = neg_bing/sentencecount)
 
-#2 using sentimentr package
-Sentiment_r <- data.frame(matrix(data=NA,nrow=N_all,ncol=2))
-names(Sentiment_r) <- c("word_count", "sentimentr")
-for (i in seq_along(comments_all2$body)){
-  # get an aggregated sentiment score for each comment 
-  output <- sentiment_by(comments_all2$body[i])
-  # return values
-  Sentiment_r$word_count[i] <- output$word_count
-  Sentiment_r$sentimentr[i] <- output$ave_sentiment
-}
-
-# attach the values back to the comments_all2
-comments_all2 <- cbind(comments_all2,Sentiment_r)
-
 ```
 
+Our second approach replies on the "sentimentr" package [@rinker2019sentimentr]. A recent review on the r sentiment computation packages recommended the "sentimentr" package over other packages ("syuzhet","rsentiment", and "sentimentanalysis") due to its proper treatment for negators [@naldi2019review]. Compared to the unigram "tidytext" approach, the "sentimentr" package incorporates valence shifters, including negators, amplifiers, and de-amplifiers into weighted sentiment scores. We went with the default lexicon choice, `lexicon::hash sentiment jockers rinker`, which contains 11709 words, each may take one of 19 values in the range of [-2,1], where positive polarity scores indicate positive sentiment and negative scores indicate negative sentiment. As mentioned above, the function `sentiment_by()` by default returns a mean sentiment score across sentences of a comment. One additional difference we shall notice between "sentimentr" and "tidytext" approaches is that "sentimentr" processes the whole text together rather without the removal of stop words. The chunk below exemplifies the process of the "sentimentr" approach,
 
-
-```{r}
-# Trump Tweets from 1/1/2020 - 11/2/2020 mentioning "China/Chinese/Wuhan/CCP"
-# Using Twitter Advanced Search function to get the result webpage containing the information I need
-url <- read_html("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
-
-# library(robotstxt)
-# paths_allowed("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
-# It returns FALSE. It indicates that only tweeter's official API is allowed.
-
-# I still have a try using rvest. But Twitter blocked the attempt got by returning empty lists, same as people reported on Stack Overflow. The following codes are what I have tried. 
-# library("rvest")
-# url = read_html("https://twitter.com/search?pf=on&q=(china%20OR%20chinese%20OR%20wuhan%20OR%20ccp)%20(from%3ArealDonaldTrump)%20until%3A2020-11-02%20since%3A2020-01-01%20-filter%3Alinks&src=typed_query")
-# # by inspect the html elements of the webpage, I got the exact xpath for Trumps' twitters along with
-# # information of date, num of likes, num of retweets, and num of comments.
-# nodes <- html_nodes(url, xpath ='//*[@id="react-root"]/div/div/div[2]/main/div/div/div/div[1]/div/div[2]/div/div/section/div/div/div[1]/div/div/article/div/div/div/div[2]/div[2]')
-# or use class selector: xpath = '//*[contains(concat( " ", @class, " " ), concat( "", "r-1mi0q7o", " " ))]//div'
-# But anyway they just got blocked.
-
-# Considering there are not many tweets in total, my eventual choice is using copy and paste to textedit.
-
-# import the csv.
-trump_tweets <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/trump_tweets.csv", header = TRUE)
-
-# recognize and format date variables
-trump_tweets$create_date <- as.Date(trump_tweets$create_date, format = "%m/%d/%Y")
-trump_tweets$retrieve_date <- as.Date(trump_tweets$create_date, format = "%m/%d/%Y")
-
-# sample size
-N_trump <- nrow(trump_tweets)
-
-```
-
-```{r, include = FALSE}
-# reddit control comments
-comments_control <- read.csv("/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/comments_control.csv", header = TRUE)
-# select useful variables
-comments_control <- comments_control[keyvar]
-# Delete duplicates.
-comments_control <- unique(comments_control)
-# sample size
-N_control <- nrow(comments_control)
-
-# convert unix epoch to human readable time by Greenwich Mean Time 
-comments_control <- comments_control %>%
-  mutate(create_time = as.POSIXct(created_utc, origin="1970-01-01", tz = "GMT")) %>%
-  mutate(create_date = as.Date(create_time)) %>% # store only the date
-  arrange(created_utc) # sort by created_utc from 2020/1/1
-
-# table(comments_control$author_flair_text)
-# an additional naming Toaster is the auto moderators of the subreddit,
-# rather than meaningful comments. We ignore all comments associated with this naming.
-
-# unify naming of trump support status
-TrumpSupport_control <- rep(NA,N_control)
-for (i in seq_along(comments_control$author_flair_text)){
-  if(is.na(comments_control$author_flair_text[i])){
-    TrumpSupport_control[i] <- NA
-  }else if(comments_control$author_flair_text[i]==""){
-    TrumpSupport_control[i] <- NA
-  }else if(grepl("Unfl",comments_control$author_flair_text[i],fixed=TRUE)){
-    TrumpSupport_control[i] <- NA
-  }else if(grepl("Toaster",comments_control$author_flair_text[i],fixed=TRUE)){
-    TrumpSupport_control[i] <- NA
-  }else if (grepl("Non",comments_control$author_flair_text[i],fixed=TRUE)){
-    TrumpSupport_control[i] <- "NonSupporter"
-  }else if(grepl("Unde",comments_control$author_flair_text[i],fixed=TRUE)){
-    TrumpSupport_control[i] <- "Undecided"
-  }else{
-    TrumpSupport_control[i] <- "Supporter"
-  }
-}
-
-# table(TrumpSupport) to check the naming
-# only 36 missing data
-
-# attach back to the main data frame
-comments_control$TrumpSupport <- TrumpSupport_control
-
-```
-
-## Results
-
-This section presents the main results.
-
-### Data exploration
-
-The results section may have a data exploration part, but in general the structure here depends on the specific project.
-
-```{r}
+```{r, cache=TRUE}
 # Get sentiments of each Reddit comments
-
-# separate sentences of comments
-sentences <- get_sentences(comments_all2$body)
-# get the number of sentences for normalization of bing/afinn sentiment scores.
-sentencecount<- sapply(1:N_all, function(x) length(sentences[[x]]))
-
-# attach sentencecount back to the data frame
-comments_all2$sentence_count <- sentencecount
-
-
-#1. tidytext approach:
-
-# tokenization of comments 
-# remove stop words:
-comments_clean <- comments_all2 %>%
-  unnest_tokens("word", body) %>%
-  anti_join(get_stopwords())
-
-#1.1 with dictionary afinn (get net sentiment/or called polarity)
-comments_afinn <- comments_clean %>%
-  inner_join(get_sentiments("afinn")) %>%
-  group_by(id) %>%
-  summarise(afinn = sum(value))
-
-# Note that not all words have an afinn sentiment score, 
-# and thus, not all comments has a sentiment score.
-
-# join the normalized sentiment back to the data frame comments_all2
-# join by the unique comment id.
-comments_all2 <- comments_all2 %>%
-  left_join(comments_afinn, by = "id") %>%
-  mutate(afinn = afinn/sentencecount)
-
-#1.2 using bing (get net sentiment/polarity)
-comments_bing <- comments_clean %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
-  mutate(bing = positive - negative) %>%
-  rename(pos_bing = positive, neg_bing = negative)
-
-# join the normalized sentiment back to the data frame comments_all2
-# join by the unique comment id.
-comments_all2 <- comments_all2 %>%
-  left_join(comments_bing, by = "id") %>%
-  mutate(bing = bing/sentencecount,
-         pos_bing = pos_bing/sentencecount,
-         neg_bing = neg_bing/sentencecount)
-
 #2 using sentimentr package
 Sentiment_r <- data.frame(matrix(data=NA,nrow=N_all,ncol=2))
 names(Sentiment_r) <- c("word_count", "sentimentr")
@@ -461,80 +294,13 @@ for (i in seq_along(comments_all2$body)){
 # attach the values back to the comments_all2
 comments_all2 <- cbind(comments_all2,Sentiment_r)
 
-# considering that sentimentr takes a while to run, save the table to csv.
-write.csv(comments_all2, file = "/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/reddit_sentiment.csv")
-
 ```
 
-```{r}
-# get sentiment for Trump's tweets
+We repeated the same process for control comments and Trump's tweets. For convenience, we denoted these three methods as "afinn", "bing", and "sentimentr" in the present article.      
 
-# separate sentences of comments
-sentences_trump <- get_sentences(trump_tweets$body)
-# get the number of sentences for normalization of bing/afinn sentiment scores.
-sentencecount_trump<- sapply(1:N_trump, function(x) length(sentences_trump[[x]]))
+```{r, include=FALSE, cache = TRUE}
 
-#1. tidytext approach:
-
-# tokenization of comments 
-# remove stop words:
-trump_tweets_clean <- trump_tweets %>%
-  unnest_tokens("word", body) %>%
-  anti_join(get_stopwords())
-
-#1.1 with dictionary afinn (get net sentiment/or called polarity)
-trump_comments_afinn <- trump_tweets_clean %>%
-  inner_join(get_sentiments("afinn")) %>%
-  group_by(id) %>%
-  summarise(afinn = sum(value))
-
-# Note that not all words have an afinn sentiment score, 
-# and thus, not all comments has a sentiment score.
-
-# join the normalized sentiment back to the data frame comments_all2
-# join by the unique comment id.
-trump_tweets <- trump_tweets %>%
-  left_join(trump_comments_afinn, by = "id") %>%
-  mutate(afinn = afinn/sentencecount_trump)
-
-#1.2 using bing (get net sentiment/polarity)
-trump_comments_bing <- trump_tweets_clean %>%
-  inner_join(get_sentiments("bing")) %>%
-  count(id, sentiment) %>%
-  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
-  mutate(bing = positive - negative) %>%
-  rename(pos_bing = positive, neg_bing = negative)
-
-# join the normalized sentiment back to the data frame comments_all2
-# join by the unique comment id.
-trump_tweets <- trump_tweets %>%
-  left_join(trump_comments_bing, by = "id") %>%
-  mutate(bing = bing/sentencecount_trump,
-         pos_bing = pos_bing/sentencecount_trump,
-         neg_bing = neg_bing/sentencecount_trump)
-
-#2 using sentimentr package
-trump_Sentiment_r <- data.frame(matrix(data=NA,nrow=N_trump,ncol=2))
-names(trump_Sentiment_r) <- c("word_count", "sentimentr")
-for (i in seq_along(trump_tweets$body)){
-  # get an aggregated sentiment score for each comment 
-  output <- sentiment_by(trump_tweets$body[i])
-  # return values
-  trump_Sentiment_r$word_count[i] <- output$word_count
-  trump_Sentiment_r$sentimentr[i] <- output$ave_sentiment
-}
-
-# attach the values back to the comments_all2
-trump_tweets <- cbind(trump_tweets,trump_Sentiment_r)
-
-# save as csv
-write.csv(trump_tweets, file = "/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/trumptweets_sentiment.csv")
-
-```
-
-```{r}
 # Get sentiments of each control comment
-
 # separate sentences of comments
 sentences_control <- get_sentences(comments_control$body)
 # get the number of sentences for normalization of bing/afinn sentiment scores.
@@ -594,16 +360,80 @@ for (i in seq_along(comments_control$body)){
 # attach the values back to the comments_control
 comments_control <- cbind(comments_control,Sentiment_r_control)
 
-# considering that sentimentr takes a while to run, save the table to csv.
-write.csv(comments_control, file = "/Users/camyhan/Desktop/Fall 2020/SURVMETH 727/SURVMETH727-final-project/reddit_control_sentiment.csv")
+#---------------------------------------------------------------#
+
+# get sentiment for Trump's tweets
+
+# separate sentences of comments
+sentences_trump <- get_sentences(trump_tweets$body)
+# get the number of sentences for normalization of bing/afinn sentiment scores.
+sentencecount_trump<- sapply(1:N_trump, function(x) length(sentences_trump[[x]]))
+
+# attach sentencecount back to the data frame
+trump_tweets$sentence_count <- sentencecount_trump
+
+#1. tidytext approach:
+
+# tokenization of comments 
+# remove stop words:
+trump_tweets_clean <- trump_tweets %>%
+  unnest_tokens("word", body) %>%
+  anti_join(get_stopwords())
+
+#1.1 with dictionary afinn (get net sentiment/or called polarity)
+trump_comments_afinn <- trump_tweets_clean %>%
+  inner_join(get_sentiments("afinn")) %>%
+  group_by(id) %>%
+  summarise(afinn = sum(value))
+
+# Note that not all words have an afinn sentiment score, 
+# and thus, not all comments has a sentiment score.
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+trump_tweets <- trump_tweets %>%
+  left_join(trump_comments_afinn, by = "id") %>%
+  mutate(afinn = afinn/sentencecount_trump)
+
+#1.2 using bing (get net sentiment/polarity)
+trump_comments_bing <- trump_tweets_clean %>%
+  inner_join(get_sentiments("bing")) %>%
+  count(id, sentiment) %>%
+  pivot_wider(names_from = sentiment, values_from = n, values_fill = 0) %>%
+  mutate(bing = positive - negative) %>%
+  rename(pos_bing = positive, neg_bing = negative)
+
+# join the normalized sentiment back to the data frame comments_all2
+# join by the unique comment id.
+trump_tweets <- trump_tweets %>%
+  left_join(trump_comments_bing, by = "id") %>%
+  mutate(bing = bing/sentencecount_trump,
+         pos_bing = pos_bing/sentencecount_trump,
+         neg_bing = neg_bing/sentencecount_trump)
+
+#2 using sentimentr package
+trump_Sentiment_r <- data.frame(matrix(data=NA,nrow=N_trump,ncol=2))
+names(trump_Sentiment_r) <- c("word_count", "sentimentr")
+for (i in seq_along(trump_tweets$body)){
+  # get an aggregated sentiment score for each comment 
+  output <- sentiment_by(trump_tweets$body[i])
+  # return values
+  trump_Sentiment_r$word_count[i] <- output$word_count
+  trump_Sentiment_r$sentimentr[i] <- output$ave_sentiment
+}
+
+# attach the values back to the comments_all2
+trump_tweets <- cbind(trump_tweets,trump_Sentiment_r)
+
 ```
 
 
-### Analysis
+#### Sentiment Across Groups
 
-This section presents the main results, such as (for example) stats and graphs that show relationships, model results and/or clustering, PCA, etc.
+First, we would like to figure out whether there is actually a negative tide of attitude towards China among Americans in the year of 2020 as the news articles demonstrated? We thus examined the overall attitude towards China as reflected in the subreddit comments. As shown in the table below, we found that the mean sentiment scores are significantly negative for all three methods (Table 1).  
 
-```{r}
+
+```{r, include = FALSE}
 
 # What is the Reddit comments' overall sentiment towards China?
 grp.sum1 <- comments_all2 %>%
@@ -611,7 +441,35 @@ grp.sum1 <- comments_all2 %>%
   pivot_longer(everything(),names_to="method", values_to="polarity") %>%
   group_by(method) %>%
   summarise(grp.mean = mean(polarity, na.rm=TRUE),
-            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
+            grp.sd = sd(polarity,na.rm=TRUE))
+
+# t-tests
+out1 <- t.test(comments_all2$afinn, alternative="two.sided", mu = 0)
+out2 <- t.test(comments_all2$bing, alternative="two.sided", mu = 0)
+out3 <- t.test(comments_all2$sentimentr, alternative="two.sided", mu = 0)
+
+```
+
+
+```{r, echo = FALSE}
+
+# draw table with kable
+temp.df <- data.frame(method = c("Afinn","Bing", "SentimentR"),
+                      mean = grp.sum1$grp.mean,
+                      sd = grp.sum1$grp.sd,
+                      df = c(out1[[2]][[1]],out3[[2]][[1]],out3[[2]][[1]]),
+                      t = c(out1[[1]][[1]],out2[[1]][[1]],out3[[1]][[1]]),
+                      p = rep("<0.0001",3))
+
+kable(temp.df, digits = 3, caption = "Sentiment Polarity Across Three Methods")
+
+
+```
+
+
+Second, is there any difference between Trump supporters and non-supporters? As we expected, Trump supporters showed significantly more negative sentiments in their comments about China compared to non-supporters regardless of methods. As shown by one-way ANOVA, there was a significant main effect of `TrumpSupport` on sentiment scores for all three methods (Afinn: F(2,13708)=4.91, p<0.001;Bing: F(2,13929)=17.26, p<0.001; SentimentR: F(2,14804)=9.52, p<0.001). In addition, post hoc tests using Turkeys' HSD (see Table 2) revealed that the mean sentiment were always significantly more negative for the supporters than the non-supporters across three methods. To demonstrate the difference visually, below is a bar plot with standard error bars comparing the sentiment scores of subreddit comments about China. We also plotted the sentiment scores for Trump's tweets by side as a reference. Due to the large variations of sentiments scores for Trump's tweets, the issue of different platforms, and the mixed comparative results between Trump's sentiments and reddit users' sentiments, here we avoided over-interpreting the relative negativity between Trump's sentiments and his supporters' sentiments.       
+        
+```{r, cache = TRUE, echo=FALSE}
 
 # Any differences between trump supporters and non-supporters?
 grp.sum2 <- comments_all2 %>%
@@ -623,26 +481,33 @@ grp.sum2 <- comments_all2 %>%
             grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
   
 ## ANOVA analysis
-mod = aov(afinn~TrumpSupport,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod1 = aov(afinn~TrumpSupport,data=comments_all2)
+tuk1 = TukeyHSD(mod1)
 
-mod = aov(bing~TrumpSupport,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod2 = aov(bing~TrumpSupport,data=comments_all2)
+tuk2 =TukeyHSD(mod2)
 
-mod = aov(sentimentr~TrumpSupport,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod3 = aov(sentimentr~TrumpSupport,data=comments_all2)
+tuk3 = TukeyHSD(mod3)
 
-## barplot
-grp.sum2 %>%
-  ggplot(aes(x=TrumpSupport, y=grp.mean, fill=TrumpSupport)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
-               position=position_dodge(.9)) +
-  facet_wrap(~ method, scales = "free", nrow = 3) +
-  theme_minimal()
+
+# table for post hoc
+temp <- rbind(as.data.frame(tuk1$TrumpSupport),
+              as.data.frame(tuk2$TrumpSupport),
+              as.data.frame(tuk3$TrumpSupport))
+temp$compare <- rep(rownames(temp)[1:3],3)
+temp$method <- c(rep("Afinn",3),rep("Bing",3),rep("SentimentR",3))
+rownames(temp) <- NULL
+temp <- temp %>%
+  relocate(compare, .before = diff) %>%
+  relocate(method, .before = compare)
+
+knitr::kable(temp[,-1], digits = 3, caption = "Summary of Tukey's HSD") %>%
+  pack_rows("Afinn", 1, 3) %>%
+  pack_rows("Bing", 4, 6) %>%
+  pack_rows("Sentimentr", 7, 9) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(2:5, width = "1.5cm")
   
 # What is the Trump tweets' overall sentiment towards China?
 grp.sum3 <- trump_tweets %>%
@@ -664,48 +529,15 @@ grp.sum3 %>%
   geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
                position=position_dodge(.9)) +
   facet_wrap(~ method, nrow = 3, scales = "free") +
-  theme_minimal()
+  theme_minimal() +
+  xlab("") + ylab("Mean Sentiment Polarity")
 
 ```
+       
+To eliminate the possibility that the negative attitude towards China was merely a result of COVID-relevant discussions, we further coded each comment as COVID-relevant or irrelevant. Specifically, if a comment contained any of the following six strings: "corona","covid","sarscov","ncov","virus","pandemic", this comment was considered as COVID-relevant comment, and marked as 1 for the variable `covid_relevant`. Otherwise, the comment was considered as irrelevant and marked as 0. We selected the six key strings based on the key words Lamsal [-@lamsal2020corona] used to collected the COVID-19 Tweets dataset.  
 
-control comments
-
-```{r}
-# Any differences between trump supporters and non-supporters for random comments?
-grp.sum_control <- comments_control %>%
-  select(TrumpSupport,afinn,bing,sentimentr) %>%
-  filter(!is.na(TrumpSupport)) %>%
-  pivot_longer(-TrumpSupport,names_to="method", values_to="polarity") %>%
-  group_by(TrumpSupport, method) %>%
-  summarise(grp.mean = mean(polarity, na.rm=TRUE),
-            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
-
-## ANOVA analysis
-mod = aov(afinn~TrumpSupport,data=comments_control)
-summary(mod)
-TukeyHSD(mod)
-
-mod = aov(bing~TrumpSupport,data=comments_control)
-summary(mod)
-TukeyHSD(mod)
-
-mod = aov(sentimentr~TrumpSupport,data=comments_control)
-summary(mod)
-TukeyHSD(mod)
-
-## barplot
-grp.sum_control %>%
-  ggplot(aes(x=TrumpSupport, y=grp.mean, fill=TrumpSupport)) +
-  geom_bar(stat="identity", position=position_dodge()) +
-  geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
-               position=position_dodge(.9)) +
-  facet_wrap(~ method, scales = "free", nrow = 3) +
-  theme_minimal()
-
-# which shows no difference between non-supporter and supporters
-
-# control_covid-19 comments?
-# generate key words based on: Rabindra Lamsal, March 13, 2020, "Coronavirus (COVID-19) Tweets Dataset", IEEE Dataport, doi: https://dx.doi.org/10.21227/781w-ef42.
+```{r, cache=TRUE}
+# encode covid-19 comments with sjmisc package
 covid_keywords <- c("corona","covid","sarscov","ncov","virus","pandemic")
 covid_relevant <- rep(NA,N_all)
 for (i in 1: N_all) {
@@ -738,31 +570,112 @@ grp.sum_covid %>%
   geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
                position=position_dodge(.9)) +
   facet_wrap(~ method, scales = "free", nrow = 3) +
-  theme_minimal()
+  theme_minimal() +
+  xlab("") + ylab("Mean Sentiment Polarity")
+```
 
-  
+```{r, echo=FALSE}
 ## ANOVA analysis
-mod = aov(afinn~TrumpSupport*covid_relevant,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod1 = aov(afinn~TrumpSupport*covid_relevant,data=comments_all2)
+tuk1 <- TukeyHSD(mod1)
+sum1 <- summary(mod1)
 
-mod = aov(bing~TrumpSupport*covid_relevant,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod2 = aov(bing~TrumpSupport*covid_relevant,data=comments_all2)
+tuk2 <- TukeyHSD(mod2)
+sum2 <- summary(mod2)
 
-mod = aov(sentimentr~TrumpSupport*covid_relevant,data=comments_all2)
-summary(mod)
-TukeyHSD(mod)
+mod3 = aov(sentimentr~TrumpSupport*covid_relevant,data=comments_all2)
+tuk3 <- TukeyHSD(mod3)
+sum3 <- summary(mod3)
 
-  
+## aggregated table
+temp <- rbind(sum1[[1]][1:4],sum2[[1]][1:4],sum3[[1]][1:4])
+temp<-cbind(Effect=rep(rownames(sum1[[1]][1:4]),3),temp)
+rownames(temp) <- NULL
+kable(temp, digit=3, caption="Summary of ANOVA") %>%
+  pack_rows("Afinn", 1, 4) %>%
+  pack_rows("Bing", 5, 8) %>%
+  pack_rows("Sentimentr", 9, 12) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(2:5, width = "1.5cm")
+
+
+# kable(temp, digit=3, caption="Summary of ANOVA") %>%
+# add_header_above(c("","Afinn"=4, "Bing"=4, "Sentimentr"=4))
 
 
 ```
+           
+Again, we visually presented the results in the format of bar plots with standard error bars. As we can see, COVID-relevant comments were associated with significantly more negative sentiments than irrelevant comments. But Trump supporters' comments about China were significantly more negative than non-supporters for both COVID-relevant and irrelevant contents. It indicates that Trump supporters' extra negative sentiments about China is not only concentrated on the topic of COVID-19, but spills over to topics about China in general. We also confirmed the above observations with two-way ANOVA (Table 3), where we found significant main effects of `covid_relevant` and `TrumpSupport` on sentiments for all three methods.
 
 
+```{r, include=FALSE, cache=TRUE}
+# Any differences between trump supporters and non-supporters for random comments?
+grp.sum_control <- comments_control %>%
+  select(TrumpSupport,afinn,bing,sentimentr) %>%
+  filter(!is.na(TrumpSupport)) %>%
+  pivot_longer(-TrumpSupport,names_to="method", values_to="polarity") %>%
+  group_by(TrumpSupport, method) %>%
+  summarise(grp.mean = mean(polarity, na.rm=TRUE),
+            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all))
+
+## ANOVA analysis
+mod = aov(afinn~TrumpSupport,data=comments_control)
+summary(mod)
+TukeyHSD(mod)
+
+mod = aov(bing~TrumpSupport,data=comments_control)
+summary(mod)
+TukeyHSD(mod)
+
+mod = aov(sentimentr~TrumpSupport,data=comments_control)
+summary(mod)
+TukeyHSD(mod)
+
+# compare with china-related comments
+
+# t-test overall positive/negative
+t.test(comments_control$afinn, alternative="two.sided", mu = 0)
+t.test(comments_control$bing, alternative="two.sided", mu = 0)
+t.test(comments_control$sentimentr, alternative="two.sided", mu = 0)
+
+compare.df <- rbind(comments_all2[,c("TrumpSupport","afinn","bing","sentimentr")],comments_control[,c("TrumpSupport","afinn","bing","sentimentr")])
+compare.df$condition <- c(rep("china",N_all),rep("control",N_control))
+
+mod = aov(afinn~condition,data=compare.df)
+summary(mod)
+
+mod = aov(bing~condition,data=compare.df)
+summary(mod)
+
+mod = aov(sentimentr~condition,data=compare.df)
+summary(mod)
+
+```
+
+```{r, echo=FALSE}
+## barplot
+grp.sum_control %>%
+  ggplot(aes(x=TrumpSupport, y=grp.mean, fill=TrumpSupport)) +
+  geom_bar(stat="identity", position=position_dodge()) +
+  geom_errorbar(aes(ymin=grp.mean-grp.se, ymax=grp.mean+grp.se), width=.2,
+               position=position_dodge(.9)) +
+  facet_wrap(~ method, scales = "free", nrow = 3) +
+  theme_minimal() +
+  xlab("") + ylab("Mean Sentiment Polarity")
+```
 
 
-```{r}
+Next, we compared the sentiments of China-related comments to the control comments, which serves as a baseline. One-sample t-test shows that the overall sentiments of these random comments were significantly positive for all three methods (Afinn: t(13232)=5.46, p<0.001; Bing: t(13474)=2.77, p<0.01; Sentimentr: t(18368)=6.26, p<0.001). Compared to what we have showed previously that the overall sentiments were significantly negative for china-related comments, it implies that in general there seemed to a tide of anti-China attitude. We also performed an one-way ANOVA of sentiments on comments contents (china-related vs. control) to confirmed the above findings. In deed, the mean sentiments for random comments in this subreddit were significantly more positive than those for china-related comments for all three political groups as revealed by the main effect of comments contents (afinn: F(1,26976)=186, p<0.001; bing: F(1,27438)=76.9, p<0.001; sentimentr: F(1,33210)=340.2, p<0.001).
+
+We then further examined that difference between Trump supporters and non-supporters in terms of their sentiments on random comments. As shown in the bar plots below, there is no difference between Trump supporters and non-supporters in terms of baseline sentiments. The results indicated that Trump supporters held certain exclusive negative attitude about China.
+      
+
+#### Sentiment Trend Over Time
+
+In this section, we examined the trend of sentiment change over time. To achieve this, we first transformed the sentiments into time series objects and ordered them by date with the aid of "xts" package. Below is a sample chunk of transforming to `Date` object with "xts" package.
+
+```{r, include=FALSE, cache = TRUE}
 # Time series analysis
 # Is there a sentiment change over time?
 
@@ -802,7 +715,7 @@ ts_sentimentr_reddit <- senti_reddit %>%
   pivot_wider(names_from = TrumpSupport, values_from = sentimentr)
 ts_sentimentr_reddit <- xts(ts_sentimentr_reddit[-1],order.by=ts_sentimentr_reddit$create_date)
 
-# with trump
+# for trump tweets
 ts_afinn_all <- senti_all %>%
   select(create_date,TrumpSupport, afinn) %>%
   pivot_wider(names_from = TrumpSupport, values_from = afinn)
@@ -812,364 +725,212 @@ ts_bing_all <- senti_all %>%
   select(create_date,TrumpSupport, bing) %>%
   pivot_wider(names_from = TrumpSupport, values_from = bing)
 ts_bing_all <- xts(ts_bing_all[-1],order.by=ts_bing_all$create_date)
+```
 
+```{r}
+# Sample codes for transforming to Date objects 
 ts_sentimentr_all <- senti_all %>%
   select(create_date,TrumpSupport, sentimentr) %>%
   pivot_wider(names_from = TrumpSupport, values_from = sentimentr)
 ts_sentimentr_all <- xts(ts_sentimentr_all[-1],order.by=ts_sentimentr_all$create_date)
 
+```
+
+Next we visualized the time series over the whole period. We did it in two ways. The first way is a static time series plot with the aid of "ggplot2". In particular, we took the rolling average across a period of 15 days to smooth the time series curve, which shall ease the readers' eyes to spot the trends. Specifically, each point on the time series plot represents the mean sentiments over 15 days staring at the date of selection. The plot below is an example of time series plot, with sentiment polarity scores obtained by "sentimentr" package.   
+
+```{r, include=FALSE}
+# time series plot with ggplot2
+
+ggplot(senti_all, aes(x = create_date, y = afinn, color = TrumpSupport)) +
+  scale_x_date(date_breaks = "2 month", date_labels = "%B") +
+  geom_line(data = senti_all %>%
+              group_by(TrumpSupport) %>%
+              mutate(afinn = rollmean(afinn, 15, align = "left", fill = NA))) +
+  theme(legend.position="bottom")
+
+ggplot(senti_all, aes(x = create_date, y = bing, color = TrumpSupport)) +
+  scale_x_date(date_breaks = "2 month", date_labels = "%B") +
+  geom_line(data = senti_all %>%
+              group_by(TrumpSupport) %>%
+              mutate(bing = rollmean(bing, 15, align = "left", fill = NA))) +
+  theme(legend.position="bottom")
+```
+
+```{r}
+
+# sample codes for time series plot with ggplot2
+ggplot(senti_all, aes(x = create_date, y = sentimentr, color = TrumpSupport)) +
+  scale_x_date(date_breaks = "2 month", date_labels = "%B") +
+  geom_line(data = senti_all %>%
+              group_by(TrumpSupport) %>%
+              mutate(sentimentr = rollmean(sentimentr, 15, align = "left", fill = NA))) +
+  theme(legend.position="top")
+
+```
+
+In particular, we also plot interactive time series plots with "dygraph" package in case readers would love to investigate into the details on each day for each group. Again, we smoothed the day-by-day jitters by plotting the rolling means across a period of 15 days to make the plot more readable. The interactive plots were save as html files ("dy_afinn.html","dy_bing.html","dy_sentimentr_html") within the same file.  
+
+As we may notice, visually there seemed to be a sharp decrease of sentiment at the beginning of the year and then stayed relatively stable for reddit comments about China (the trend is more clear with dygraph plots than ggplot2). Trump's tweets about China, showed greater variations in sentiments--a sharp decrease at the beginning of the year and a big dip around August. We shall note that the large variations might be due to the small sample size (121 tweets in in total).
+
+```{r, include=FALSE}
 
 # plot an interactive time series graph with dygraph package
-# just reddit
-dygraph(ts_afinn_reddit, main = "Sentiment by Afinn") %>% 
-  dyRangeSelector() %>%
-  dyRoller(rollPeriod = 15) %>%
-  dyOptions(colors = RColorBrewer::brewer.pal(3, "Set2")) %>%
-  dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
-
-dygraph(ts_bing_reddit, main = "Sentiment by Bing") %>% 
-  dyRangeSelector() %>%
-  dyRoller(rollPeriod = 15) %>%
-  dyOptions(colors = RColorBrewer::brewer.pal(3, "Set2")) %>%
-  dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
-
-dygraph(ts_sentimentr_reddit, main = "Sentiment by SentimentR") %>% 
-  dyRangeSelector() %>%
-  dyRoller(rollPeriod = 15) %>%
-  dyOptions(colors = RColorBrewer::brewer.pal(3, "Set2")) %>%
-  dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
-
 # draw all together with trump's data
-dygraph(ts_afinn_all, main = "Sentiment by Afinn") %>% 
+dy_afinn <- dygraph(ts_afinn_all, main = "Sentiment by Afinn") %>% 
   dyRangeSelector() %>%
   dyRoller(rollPeriod = 15) %>%
   dyOptions(colors = RColorBrewer::brewer.pal(4, "Set2")) %>%
   dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
 
-dygraph(ts_bing_all, main = "Sentiment by Bing") %>% 
+# save as html file
+# htmlwidgets::saveWidget(widget = dy_afinn, file = "dy_afinn.html")
+
+dy_bing <- dygraph(ts_bing_all, main = "Sentiment by Bing") %>%
   dyRangeSelector() %>%
   dyRoller(rollPeriod = 15) %>%
   dyOptions(colors = RColorBrewer::brewer.pal(4, "Set2")) %>%
   dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
 
-dygraph(ts_sentimentr_all, main = "Sentiment by SentimentR") %>% 
+# save as html file
+# htmlwidgets::saveWidget(widget = dy_bing, file = "dy_bing.html")
+```
+
+```{r}
+# sample codes for interactive time series plot with dygraphs
+dy_sentimentr <- dygraph(ts_sentimentr_all, main = "Sentiment by SentimentR") %>%
   dyRangeSelector() %>%
   dyRoller(rollPeriod = 15) %>%
   dyOptions(colors = RColorBrewer::brewer.pal(4, "Set2")) %>%
   dyLegend(show = "always", hideOnMouseOut = FALSE, width = 150)
 
+# save as html file
+# htmlwidgets::saveWidget(widget = dy_sentimentr, file = "dy_sentimentr.html")
 
+```
+
+Statistically, we employed the Mann-Kendall trend test to examine whether there is a monotonic trend in the sentiment change over time. As shown in the Table 4, the results seemed to be mixed across methods. It is hard to conclude whether there was a significant monotonic trend over the whole ten months. However, if we focused only the first three months, the trend was quite clear. Across all methods and groups, the Mann-Kendall trend tests revealed a significantly downward trajectory of sentiments (Table 5). It indicates that the possible critical turning point mentioned by the Diplomat article appeared at the beginning of this year. It might be triggered by the outbreak of COVID. But the current research did not examine the causality and thus we had no exact answer.    
+    
+```{r, echo=FALSE, cache=TRUE}
 # test whether there is monotonic trend with the Mann-Kendall Trend Test
-MannKendall(ts_afinn_all$Trump)
-MannKendall(ts_afinn_all$Supporter)
-# tau = 0.0686, 2-sided pvalue =0.07378
-MannKendall(ts_afinn_all$NonSupporter)
-MannKendall(ts_bing_all$Trump)
-# tau = -0.193, 2-sided pvalue =0.013363
-MannKendall(ts_bing_all$Supporter)
-MannKendall(ts_bing_all$NonSupporter)
-MannKendall(ts_sentimentr_all$Trump)
-# tau = -0.167, 2-sided pvalue =0.02625
-MannKendall(ts_sentimentr_all$Supporter)
-MannKendall(ts_sentimentr_all$NonSupporter)
+mk1 <- MannKendall(ts_afinn_all$Trump)
+mk2 <- MannKendall(ts_afinn_all$Supporter)
+mk3 <- MannKendall(ts_afinn_all$NonSupporter)
+mk4 <- MannKendall(ts_afinn_all$Undecided)
+mk5 <- MannKendall(ts_bing_all$Trump)
+mk6 <- MannKendall(ts_bing_all$Supporter)
+mk7 <- MannKendall(ts_bing_all$NonSupporter)
+mk8 <- MannKendall(ts_bing_all$Undecided)
+mk9 <- MannKendall(ts_sentimentr_all$Trump)
+mk10 <- MannKendall(ts_sentimentr_all$Supporter)
+mk11 <- MannKendall(ts_sentimentr_all$NonSupporter)
+mk12 <- MannKendall(ts_sentimentr_all$Undecided)
+
+# put in a table
+temp <- data.frame(Afinn_tau=c(mk1$tau[1],mk2$tau[1],mk3$tau[1],mk4$tau[1]),
+                   Afinn_p =c(mk1$sl[1],mk2$sl[1],mk3$sl[1],mk4$sl[1]),
+                   Bing_tau=c(mk5$tau[1],mk6$tau[1],mk7$tau[1],mk8$tau[1]),
+                   Bing_p =c(mk5$sl[1],mk6$sl[1],mk7$sl[1],mk8$sl[1]),
+                   SentiR_tau=c(mk9$tau[1],mk10$tau[1],mk11$tau[1],mk12$tau[1]),
+                   SentiR_p =c(mk9$sl[1],mk10$sl[1],mk11$sl[1],mk12$sl[1]))
+
+rownames(temp) <- c("Trump","Supporter","Non-Supporter","Undecided")
+kable(temp,digit=3,caption="Mann-Kendall Trend Test Over 1/1-11/2")
 
 # test whether there is a trend at the beginning of a year
 start.date = as.Date("2020-1-1")
 end.date = as.Date("2020-4-1")
 
-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$Trump)
+mk1 <-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$Trump)
 # tau = -0.6, 2-sided pvalue =0.13285
-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$Supporter)
+mk2 <-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$Supporter)
 # tau = -0.197, 2-sided pvalue =0.21362
-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$NonSupporter)
+mk3 <-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$NonSupporter)
 # tau = -0.165, 2-sided pvalue =0.019774
-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$Trump)
+mk4 <-MannKendall(ts_afinn_all[paste(start.date,end.date,sep="::")]$Undecided)
+mk5 <-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$Trump)
 # tau = -0.296, 2-sided pvalue =0.055901
-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$Supporter)
+mk6 <-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$Supporter)
 # tau = -0.316, 2-sided pvalue =8.5025e-06
-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$NonSupporter)
+mk7 <-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$NonSupporter)
 # tau = -0.239, 2-sided pvalue =0.00075324
-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$Trump)
+mk8 <-MannKendall(ts_bing_all[paste(start.date,end.date,sep="::")]$Undecided)
+mk9 <-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$Trump)
 # tau = -0.261, 2-sided pvalue =0.078219
-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$Supporter)
+mk10 <-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$Supporter)
 # tau = -0.218, 2-sided pvalue =0.0020744
-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$NonSupporter)
+mk11 <-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$NonSupporter)
 # tau = -0.201, 2-sided pvalue =0.0045607
+mk12 <-MannKendall(ts_sentimentr_all[paste(start.date,end.date,sep="::")]$Undecided)
+
+# put in a table
+temp <- data.frame(Afinn_tau=c(mk1$tau[1],mk2$tau[1],mk3$tau[1],mk4$tau[1]),
+                   Afinn_p =c(mk1$sl[1],mk2$sl[1],mk3$sl[1],mk4$sl[1]),
+                   Bing_tau=c(mk5$tau[1],mk6$tau[1],mk7$tau[1],mk8$tau[1]),
+                   Bing_p =c(mk5$sl[1],mk6$sl[1],mk7$sl[1],mk8$sl[1]),
+                   SentiR_tau=c(mk9$tau[1],mk10$tau[1],mk11$tau[1],mk12$tau[1]),
+                   SentiR_p =c(mk9$sl[1],mk10$sl[1],mk11$sl[1],mk12$sl[1]))
+rownames(temp) <- c("Trump","Supporter","Non-Supporter","Undecided")
+knitr::kable(temp,digit=3,caption="Mann-Kendall Trend Test Over 1/1-4/1")
+
+```
+
+#### Concurrent Trends
+
+Lastly, we examined whether there is concurrence between Trumps' sentiment trends and his supporters sentiment trends. To achieve this, we used the "forecast" package. We computed the cross-correlations and lagged cross-correlations between Trump's sentiment trends and his supporter's sentiment trends over the whole period with the function `Ccf()`. In both the plot and Table 6, the lag of days means the lags on Trump's supporters. For example, when lag of days=k, the cross-correlation was computed by correlating Trump supporters' sentiment at Day N+k and Trump's sentiment at Day N. As shown in the plot (using afinn as an example) and Table 6, no significant cross-correlations or lagged cross-correlations were found up to a lag of 5 days in either direction (i.e. all lower than the blue-dashed line, which indicates significance).     
+
+```{r, echo=FALSE}
 
 # test concurrent trends with forecast package
-#Ccf computes the cross-correlation or cross-covariance of two univariate series.
-Ccf(as.numeric(ts_sentimentr_all$Supporter),as.numeric(ts_sentimentr_all$Trump))
-Ccf(as.numeric(ts_afinn_all$Supporter),as.numeric(ts_afinn_all$Trump))
-Ccf(as.numeric(ts_bing_all$Supporter),as.numeric(ts_bing_all$Trump))
-# no significant correlation is found
+#Ccf computes the cross-correlation or cross-covariance of two univariate series. 
+ccf_afinn <- Ccf(as.numeric(ts_afinn_all$Supporter),
+                 as.numeric(ts_sentimentr_all$Trump), 
+                 plot = FALSE)
+ccf_bing <- Ccf(as.numeric(ts_bing_all$Supporter),
+                as.numeric(ts_afinn_all$Trump),
+                plot = FALSE)
+ccf_sentimentr <- Ccf(as.numeric(ts_sentimentr_all$Supporter),
+                      as.numeric(ts_bing_all$Trump),
+                      plot = FALSE)
 
-# interpretion example for ccp outputt
-set.seed(123)
-x = arima.sim(model=list(0.2, 0, 0.5), n = 100)
-y = arima.sim(model=list(0.4, 0, 0.4), n = 100)
-ccf(x, y, type="correlation")
-
-# There are two time series, x and y. The correlation between the two occurs at yt and xt+/-k where ±𝑘 is a lag. In this example, at 𝑘 = -2, -7, -10, 𝑥𝑡+𝑘 is significantly negatively correlated with 𝑦𝑡.
-# 
-# The interpretation can be that x leads y at lags 2, 7 and 10. This is random data so the leads are meaningless.
-
-##-------------------------------------------------------------------##
-
-# Trump weighted sentiment by num_likes
- senti_trump2 <- trump_tweets %>%
-  mutate(afinn_w = afinn*num_likes/100,
-         bing_w = bing*num_likes/100,
-         sentimentr_w = sentimentr*num_likes/100) %>%
-  select(create_date, afinn_w, bing_w, sentimentr_w) %>%
-  rename_with(~gsub("_w", "", .x, fixed = TRUE)) %>%
-  group_by(create_date) %>%
-  summarise(across(everything(),list(~mean(.x,na.rm=TRUE)))) %>%
-  mutate(TrumpSupport = "Trump") %>%
-  rename_with(~gsub("_1", "", .x, fixed = TRUE)) %>%
-  relocate(TrumpSupport, .after = create_date)
- 
-senti_all2 <- rbind(senti_reddit,senti_trump2) %>%
-  arrange(create_date)
-
-ts_afinn_all2 <- senti_all2 %>%
-  select(create_date,TrumpSupport, afinn) %>%
-  pivot_wider(names_from = TrumpSupport, values_from = afinn)
-ts_afinn_all2 <- xts(ts_afinn_all2[-1],order.by=ts_afinn_all2$create_date)
-
-ts_bing_all2 <- senti_all2 %>%
-  select(create_date,TrumpSupport, bing) %>%
-  pivot_wider(names_from = TrumpSupport, values_from = bing)
-ts_bing_all2 <- xts(ts_bing_all2[-1],order.by=ts_bing_all2$create_date)
-
-ts_sentimentr_all2 <- senti_all2 %>%
-  select(create_date,TrumpSupport, sentimentr) %>%
-  pivot_wider(names_from = TrumpSupport, values_from = sentimentr)
-ts_sentimentr_all2 <- xts(ts_sentimentr_all2[-1],order.by=ts_sentimentr_all2$create_date)
-
-# weighted correlation?
-Ccf(as.numeric(ts_sentimentr_all2$Supporter),as.numeric(ts_sentimentr_all2$Trump))
-Ccf(as.numeric(ts_afinn_all2$Supporter),as.numeric(ts_afinn_all2$Trump))
-Ccf(as.numeric(ts_bing_all2$Supporter),as.numeric(ts_bing_all2$Trump))
-# no significant correlation even after weighted number of likes
+# plot for ccf_afinn as an example
+plot(ccf_afinn, main = "",
+     xlim = c(-5,5), xlab = "Lag of Days on Supporters",
+     ylab = "Cross Correlation",
+     cex=0.5, cex.main=0.5, family="serif")
 
 
+temp <- data.frame(Afinn = ccf_afinn$acf[,,1],
+                   Bing = ccf_bing$acf[,,1],
+                   SentimentR = ccf_sentimentr$acf[,,1])
 
-##################################################
-#################################################
+# rotate with sjmisc::rotate_df
+temp <- rotate_df(temp)
+colnames(temp) <- ccf_afinn$lag[,,1]
 
+kable(temp, digit = 2, caption = "(Lagged) Cross-Correlations") 
+  
 ```
 
-
-```{r}
-
-
-#visualize
-comments_all2 %>%
-  filter(!is.na(TrumpSupport)) %>%
-  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
-  group_by(create_date, method, TrumpSupport) %>%
-  summarise(grp.mean = mean(polarity, na.rm=TRUE),
-            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all)) %>%
-  ggplot(aes(x = create_date, y = grp.mean)) +
-  geom_line(aes(group = TrumpSupport, color = TrumpSupport)) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
-  facet_wrap(. ~ method, scales="free", nrow=3) +
-  stat_smooth(method = "loess")
-
-
-comments_all2 %>%
-  filter(TrumpSupport=="Supporter") %>%
-  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
-  group_by(create_date, method, TrumpSupport) %>%
-  summarise(grp.mean = mean(polarity, na.rm=TRUE),
-            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all)) %>%
-  left_join(trplot)
-  ggplot(aes(x = create_date, y = grp.mean, group = TrumpSupport, color = TrumpSupport)) +
-  geom_line(size=0.3) +
-  stat_smooth(method = "loess",size=0.3) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
-  facet_wrap(. ~ method, scales="free", nrow=3)
-  
-
-comments_all2 %>%
-  filter(!is.na(TrumpSupport)) %>%
-  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
-  group_by(create_date, method, TrumpSupport) %>%
-  summarise(grp.mean = mean(polarity, na.rm=TRUE),
-            grp.se = sd(polarity,na.rm=TRUE)/sqrt(N_all)) %>%
-  ggplot(aes(x = create_date, y = grp.mean, group = TrumpSupport, color = TrumpSupport)) +
-  geom_line(size=0.3) +
-  stat_smooth(method = "loess",size=0.3) +
-  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
-  facet_wrap(. ~ method, scales="free", nrow=3)
-  
-
-
-# trump's tweets
-mod=lm(afinn~as.numeric(create_date),data=trump_tweets)
-summary(mod)
-
-trump_tweets %>%
-  pivot_longer(c(afinn,bing,sentimentr),names_to="method",values_to="polarity") %>%
-  group_by(create_date, method) %>%
-  ggplot(aes(x = create_date, y = polarity)) +
-  geom_line() +
-  geom_smooth() +
-  scale_x_date(date_breaks = "1 month", date_labels = "%m") +
-  facet_wrap(. ~ method, scales="free", nrow=3)
-
-
-# interactive plot
-library(dygraphs)
-interact_afinn <- comments_all2 %>% 
-  filter(!is.na(TrumpSupport)) %>%
-  group_by(create_date, TrumpSupport) %>%
-  summarise(grp.mean = mean(afinn, na.rm=TRUE)) %>%
-  pivot_wider(names_from = TrumpSupport, values_from=grp.mean)
-interact_afinn <- xts(interact_afinn[-1],order.by=interact_afinn$create_date)
-dygraph(interact_afinn) %>% 
-  dyRangeSelector()
-
-interact_bing <- comments_all2 %>% 
-  filter(!is.na(TrumpSupport)) %>%
-  group_by(create_date, TrumpSupport) %>%
-  summarise(grp.mean = mean(bing, na.rm=TRUE)) %>%
-  pivot_wider(names_from = TrumpSupport, values_from=grp.mean)
-interact_bing <- xts(interact_bing[-1],order.by=interact_bing$create_date)
-dygraph(interact_bing) %>% 
-  dyRangeSelector()
-
-interact_sentimentr <- comments_all2 %>% 
-  filter(!is.na(TrumpSupport)) %>%
-  group_by(create_date, TrumpSupport) %>%
-  summarise(grp.mean = mean(sentimentr, na.rm=TRUE)) %>%
-  pivot_wider(names_from = TrumpSupport, values_from=grp.mean)
-interact_sentimentr <- xts(interact_sentimentr[-1],order.by=interact_sentimentr$create_date)
-dygraph(interact_sentimentr) %>% 
-  dyRangeSelector()
-
-
-# correlation between trumps' sentiment and supporters' sentiment over time
-days <- unique(trump_tweets$create_date)
-ndays <- length(unique(trump_tweets$create_date))
-
-#subset comments_alls by trumpsupport
-comments_supporter <- comments_all2 %>%
-  filter(TrumpSupport == "Supporter")
-
-comments_nonsupporter <- comments_all2 %>%
-  filter(TrumpSupport == "NonSupporter")
-
-comments_undecided <- comments_all2 %>%
-  filter(TrumpSupport == "Undecided")
-
-# afinn summary
-afinn_time_df <- data.frame(create_date = days,
-                                Trump = rep(NA, ndays),
-                                Supporter = rep(NA, ndays),
-                                NonSupporter = rep(NA, ndays),
-                                Undecided = rep(NA, ndays),
-                                Method = rep("Afinn", ndays))
-
-for (i in 1:ndays ) {
-  afinn_time_df$Trump[i] = mean(trump_tweets$afinn[which(trump_tweets$create_date == days[i])],na.rm=TRUE)
-  afinn_time_df$Supporter[i] = mean(comments_supporter$afinn[which(comments_supporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  afinn_time_df$NonSupporter[i] = mean(comments_nonsupporter$afinn[which(comments_nonsupporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  afinn_time_df$Undecided[i] = mean(comments_undecided$afinn[which(comments_undecided$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-}
-
-# bing summary
-bing_time_df <- data.frame(create_date = days,
-                                Trump = rep(NA, ndays),
-                                Supporter = rep(NA, ndays),
-                                NonSupporter = rep(NA, ndays),
-                                Undecided = rep(NA, ndays),
-                                Method = rep("Bing", ndays))
-
-for (i in 1:ndays ) {
-  bing_time_df$Trump[i] = mean(trump_tweets$bing[which(trump_tweets$create_date == days[i])],na.rm=TRUE)
-  bing_time_df$Supporter[i] = mean(comments_supporter$bing[which(comments_supporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  bing_time_df$NonSupporter[i] = mean(comments_nonsupporter$bing[which(comments_nonsupporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  bing_time_df$Undecided[i] = mean(comments_undecided$bing[which(comments_undecided$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-}
-
-
-# sentimentr summary
-sentimentr_time_df <- data.frame(create_date = days,
-                                Trump = rep(NA, ndays),
-                                Supporter = rep(NA, ndays),
-                                NonSupporter = rep(NA, ndays),
-                                Undecided = rep(NA, ndays),
-                                Method = rep("Sentimentr", ndays))
-
-for (i in 1:ndays ) {
-  sentimentr_time_df$Trump[i] = mean(trump_tweets$sentimentr[which(trump_tweets$create_date == days[i])],na.rm=TRUE)
-  sentimentr_time_df$Supporter[i] = mean(comments_supporter$sentimentr[which(comments_supporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  sentimentr_time_df$NonSupporter[i] = mean(comments_nonsupporter$sentimentr[which(comments_nonsupporter$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-  sentimentr_time_df$Undecided[i] = mean(comments_undecided$sentimentr[which(comments_undecided$create_date %in% c(days[i],days[i]+1,days[i]+2))],na.rm=TRUE)
-}
-
-# sentiment_time_df by joining three together
-sentiment_time_df
-
-sentimentr_time_df[is.nan(sentimentr_time_df)] <- NA
-
-cor(sentimentr_time_df$Trump,sentimentr_time_df$Supporter,paired=TRUE)
-
-# weighted outcome of trump tweets' sentiment
-
-
-
-
-# try out time series
-supporter_day_afinn <- comments_supporter %>%
-  group_by(create_date) %>%
-  summarise(value =mean(afinn, na.rm=TRUE))
-
-supporter_afinn <- ts(supporter_day_afinn$value,start=)
-
-
-ts_supporter <- xts(sentimentr_time_df$Supporter,order.by = sentimentr_time_df$create_date)
-ts_trump <- xts(sentimentr_time_df$Trump,order.by = sentimentr_time_df$create_date)
-
-ts_supporter_afinn <- xts(afinn_time_df$Supporter,order.by = sentimentr_time_df$create_date)
-ts_trump_afinn <- xts(afinn_time_df$Trump,order.by = sentimentr_time_df$create_date)
-
-  
-ts_supporter_afinn2 <- xts(comments_all2[which(comments_all2$TrumpSupport == "Supporter"),]$afinn, order.by = comments_all2[which(comments_all2$TrumpSupport == "Supporter"),]$create_date)
-
-temp <- ts.union(ts_supporter_afinn2, ts_trump_afinn)
-
-
-temp1 <- comments_supporter[c("create_date","afinn")]
-names(temp1) <- c("date","supporter")
-
-temp2 <- trump_tweets[c("create_date","afinn")]
-names(temp2) <- c("date","trump")
-
-temp <- left_join(temp1,temp2, by= "date")
-
-temp_ts <- xts(temp[1:9376,-1], order.by=temp$date)
-
-Ccp()
-
-
-```
-
-```{r}
-# control data sets
-
-
-```
 
 ## Discussion
 
-This section summarizes the results and may briefly outline advantages and limitations of the work presented.
+In conclusion, we did observed an anti-China tide in the year of 2020 within the subreddit r/AskTrumpSupporters. The comments about China were significantly more negative than an average comment from the same subreddit, regardless of the authors' political partisanship. In particular, Trump supporters showed significantly greater negativity than non-supporters in their comments about China. Such difference was not found in their sentiments about random comments, which indicates that Trump supporters' negative attitude towards China was specialized, rather than a general venting of negative emotions. Furthermore, we found that the Trump supporters' negativity about China was not limited to topics related to COVID-19. Not only did they show more negative sentiments in their comments about COVID-19, but also more negativity in their other comments about China that were irrelevant to COVID-19. In summary, there seemed to be an anti-China tide of attitude, and particularly Trump supporters were more negative about China than non-supporters.  
 
-further,
-1. collect korea/japan vs. china
-2. follow-up study of opinions next year (post trump time), previous opinions last year.
-3. areas where chinese clustered --> the impact of opinion will be enlarged.
-4. larger sample from various platform --> representativeness
+Regarding the trend of attitude over time, we observed a sharp drop at the beginning of the of year in general regardless of the authors' partisanship. The trend then stayed negative over the rest of the period. It imply that the beginning of year 2020 might be a critical turning point in terms of the public attitudes towards China as the news articles claimed. Intuitively, the hit of COVID-19 might be the trigger. But without comparing with data from previous years, as well as a large and representative sample of U.S. population, the exact trigger of such drop is still open to many other possibilities. 
+
+Additionally, we did not find significant cross-correlations between Trumps' attitude change and his followers' attitude change in the current research. But we shall be careful in interpreting the results. It by no means concludes that there is no mutual influence on Trump's and his supporters' attitudes towards China. The current research only glimpsed at Trump's attitudes through a very limited number of tweets, which brought much noise into the time series analysis. The comparison of sentiment trends from two different social media further noised the effect if there was one. To better study the dynamics between Trump and his supporters, future studies may also look into the interactions between Trump and his supporters, such as likes, comments, and retweets on Twitter.
+
+There are many limitations of the current study. As mentioned above, we do not know how representative the subreddit sample were of the whole U.S. population. Therefore, we could not blindly generalize the findings to the whole United States. Nevertheless, it is good start. In the future studies, we may collect data from other social media, or spread surveys on different survey platforms to compare with the current findings. Additionally, we may expand the time period under examination, including the post-Trump-presidency period. On the one hand, the historical data would help us to reduce some noises and give us a more precise sense of how the public attitude about China changed over the year of 2020. On the other hand, if there was actually a large-scale anti-China tide, how long it would linger after the end of Trump's presidency is undoubtedly a critical question for individuals as well as the whole society. Finally, there are many other variables we might look at in order to get a nuanced understanding of the anti-China tide. For example, is there any difference in their attitudes about China between Trump supporter and non-supporters within Republicans? How about the public's attitude about other countries this year--is it just about China, or a general Xenophobia? Is there any regional differences? As we can imagine, the impact of the negative attitude might differ enormously between regions where Chinese clustered and where Chinese distribute sparsely.
+
+In the end, the current study is just a small step in understanding the tide of anti-China attitude. We believe that understanding the phenomenon is the first step to identify the key factors that elicit the tide of anti-China attitudes, which would eventually help us to figure out approaches to reduce misunderstandings, prejudices, discriminations, and conflicts between groups, and bring harmony back to the society.
+
+
 
 ## References
+
+\linespread{1}
+
+
+::: {#refs}
+
+:::
